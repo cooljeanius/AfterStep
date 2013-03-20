@@ -1,0 +1,10 @@
+SmallMiniPixmap Folder-View
+
+Comment "Pre-defined AfterStep\nLook, Feel, & Pictures."
+
+keepname
+include "${prefix}/share/afterstep/themes" ChangeTheme
+include "$HOME/.afterstep/themes" ChangeTheme
+extension .tar.gz
+extension .tar.bz2
+

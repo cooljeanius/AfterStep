@@ -1,0 +1,8 @@
+SmallMiniPixmap Folder-View
+
+Comment "Pre-defined AfterStep\nappearance configs."
+
+keepname
+include "@datadir@/afterstep/looks" ChangeLook
+include "@with_afterdir@/looks" ChangeLook
+extension look.
