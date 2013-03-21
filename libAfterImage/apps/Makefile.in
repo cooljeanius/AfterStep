@@ -11,8 +11,6 @@ RANLIB		= @RANLIB@
 AR		= ar clq
 CP		= @CP@
 MV		= @MV@
-RM		= @RM@
-RMF		= @RM@ -f
 MKDIR		= @MKDIR@
 FIND		= @FIND@
 XARGS		= @XARGS@
@@ -66,18 +64,18 @@ install.man:
 
 uninstall.bin:
 		@for p in $(PROGS); do \
-			echo "$(RMF) $(BIN_DIR)/$$p"; \
-			$(RMF) $(BIN_DIR)/$$p; \
+			echo "/bin/rm -rf $(BIN_DIR)/$$p"; \
+			/bin/rm -rf $(BIN_DIR)/$$p; \
 		done
 
 uninstall.man:
-		$(RMF) $(AFTER_MAN_DIR)/$(PROGS).3x
+		/bin/rm -rf $(AFTER_MAN_DIR)/$(PROGS).3x
 
 clean:
-		$(RMF) $(PROGS) *.o *~ *% *.bak \#* core
+		/bin/rm -rf $(PROGS) *.o *~ *% *.bak \#* core
 
 distclean:
-		$(RMF) $(PROGS) *.o *~ *% *.bak \#* *.orig core Makefile
+		/bin/rm -rf $(PROGS) *.o *~ *% *.bak \#* *.orig core Makefile
 
 indent:
 		@SRCS=`find . -name "*.c"`; \

@@ -1,0 +1,2 @@
+Exec "Run ..." ASRun --myname "Run command using AfterStep" &
+SmallMiniPixmap "normal/Run"

@@ -1,0 +1,179 @@
+
+@MAKEFILEDEFINES@
+
+confsdirs= autoconf libAfterBase libAfterImage
+
+####
+
+libdirs         = libAfterBase libAfterImage libAfterStep libAfterConf @LIBASGTKDIR@
+
+gtk_app_dirs    = src/tools/ASFileBrowser src/tools/ASWallpaper
+no_gtk_app_dirs =
+
+subdirs         = libAfterBase libAfterImage libAfterStep libAfterConf @LIBASGTKDIR@ \
+                  src/afterstep \
+                  src/Animate \
+                  src/Arrange \
+                  src/Banner \
+                  src/Ident \
+                  src/Pager \
+                  src/Wharf \
+                  src/WinCommand \
+                  src/WinList2 \
+                  src/WinTabs \
+                  src/ascp  \
+                  src/tools/ASRun \
+                  $(@GTK_APP_DIRS@) \
+                  afterstep \
+                  src/ASDocGen \
+                  doc tools
+
+RECURSIVE_TARGETS = all libs install install.bin install.lib install.man install.script uninstall clean distclean indent deps
+
+all: AfterStep.desktop.final
+libs: AfterStep.desktop.final
+install: install.alternative install.desktop install.wmprops mkdir
+install.bin: mkdir.bin
+install.lib: mkdir.lib
+install.man: mkdir.man
+install.script: mkdir.bin
+clean: clean-local
+distclean: distclean-local
+indent: indent-local
+deps: deps-local
+
+clean-local:
+	/bin/rm -rf AfterStep.desktop.final
+
+distclean-local:
+	/bin/rm -rf config.cache config.log config.status Makefile.bak Makefile config.h configure.h *.o *~ *% *.bak \#* core
+
+indent-local:
+	@cd include; \
+	for i in *.h; do \
+	  if (indent < $$i > /tmp/$$i); then \
+	    echo indent $$i; \
+	    mv /tmp/$$i $$i; \
+	  fi; \
+	done
+
+deps-local:
+	@for I in ${subdirs}; do if [ -d $$I ]; then touch $$I/.depend || exit 1; fi; done
+
+$(RECURSIVE_TARGETS):
+	@fail= failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+		case $$f in \
+			*=* | --[!k]*) ;; \
+			*k*) failcom='fail=yes' ;; \
+		esac; \
+	done; \
+	for I in ${subdirs}; do \
+		(cd $$I; ${MAKE} $@) || eval $$failcom; \
+	done; \
+	test -z "$$fail"
+
+AfterStep.desktop.final:
+	@$(CP) AfterStep.desktop AfterStep.desktop.final; \
+        echo "Exec=$(AFTER_BIN_DIR)/afterstep" >> AfterStep.desktop.final ; \
+        echo "Icon=$(AFTER_SHAREDIR)/desktop/icons/large/AfterStep3" >> AfterStep.desktop.final
+
+mkdir:  mkdir.bin mkdir.lib mkdir.man mkdir.share
+
+mkdir.bin:
+	@$(MKDIR) -p $(AFTER_BIN_DIR);
+
+mkdir.lib:
+	@$(MKDIR) -p $(LIBDIR);
+
+mkdir.man:
+	@$(MKDIR) -p $(AFTER_MAN_DIR); $(MKDIR) -p $(AFTER_MAN_API_DIR);
+
+mkdir.share:
+	@$(MKDIR) -p $(SHAREDIR); \
+         $(MKDIR) -p $(AFTER_SHAREDIR)
+
+module.clean:
+
+install.alternative:
+	@if update-alternatives --version > /dev/null 2>&1 ; then       \
+                update-alternatives --install /etc/alternatives/x-window-manager x-window-manager $(AFTER_BIN_DIR)/afterstep 100; \
+                echo "added AfterStep as an x-window-manager alternative"; \
+        fi
+
+install.desktop: AfterStep.desktop.final mkdir.share
+	@if [ -d $(SYSCONFDIR)/X11/sessions ] && [ -w $(SYSCONFDIR)/X11/sessions ] ; then \
+                echo "installing AfterStep.desktop $(SYSCONFDIR)/X11/xsessions/" ; \
+                $(INSTALL_DATA)  AfterStep.desktop.final $(SYSCONFDIR)/X11/xsessions/AfterStep.desktop ; \
+        fi; \
+        if [ -d $(SYSSHAREDIR)/xsessions ] && [ -w $(SYSSHAREDIR)/xsessions ] ; then \
+                echo "installing AfterStep.desktop into $(SYSSHAREDIR)/xsessions/" ; \
+                $(INSTALL_DATA)  AfterStep.desktop.final $(SYSSHAREDIR)/xsessions/AfterStep.desktop ; \
+        else if [ -d $(SHAREDIR)/xsessions ] && [ -w $(SHAREDIR)/xsessions ] ; then \
+                echo "installing AfterStep.desktop into $(SHAREDIR)/xsessions/" ; \
+                $(INSTALL_DATA)  AfterStep.desktop.final $(SHAREDIR)/xsessions/AfterStep.desktop ; \
+        else if [ -d $(SHAREDIR) ] && [ -w $(SHAREDIR) ] ; then \
+                echo "mkdir $(SHAREDIR)/xsessions"; \
+                $(MKDIR) -p $(SHAREDIR)/xsessions; \
+                echo "installing AfterStep.desktop into $(SHAREDIR)/xsessions/" ; \
+                $(INSTALL_DATA)  AfterStep.desktop.final $(SHAREDIR)/xsessions/AfterStep.desktop ; \
+        fi; fi; fi
+
+install.wmprops:
+	@if [ -d $(SHAREDIR)/gnome/wm-properties ] ; then \
+        if [ -w $(SHAREDIR)/gnome/wm-properties ] ; then \
+        echo $(CP) AfterStep.desktop $(SHAREDIR)/gnome/wm-properties/; \
+        $(CP) AfterStep.desktop $(SHAREDIR)/gnome/wm-properties/; \
+        else \
+        echo "$(SHAREDIR)/gnome/wm-properties exists but is not writable."; \
+        echo "If you want AfterStep to appear in your Gnome menu, please install as root."; \
+        fi \
+        fi
+	@if [ -d $(GNOME_SHAREDIR)/wm-properties ] ; then \
+        if [ -w $(GNOME_SHAREDIR)/wm-properties ] ; then \
+         echo $(CP) AfterStep.desktop $(GNOME_SHAREDESTDIR)/wm-properties/; \
+         $(MKDIR) -p $(GNOME_SHAREDESTDIR)/wm-properties; \
+         $(CP) AfterStep.desktop $(GNOME_SHAREDESTDIR)/wm-properties/; \
+        else \
+        echo "$(GNOME_SHAREDIR)/wm-properties exists but is not writable."; \
+        echo "If you want AfterStep to appear in your Gnome menu, please install as root."; \
+        fi \
+        fi
+
+install.share:
+	@cd afterstep && ${MAKE} install
+
+install.data:
+	@cd afterstep && ${MAKE} install.data
+
+install.data_html:
+	@cd src/ASDocGen && ${MAKE} install.data_html
+
+install.menu:
+	@cd afterstep && ${MAKE} install.menu
+
+install.config:
+	@cd afterstep && ${MAKE} install.config
+
+
+config:
+	@for I in ${confsdirs}; do \
+          (cd $$I ;  autoconf configure.in > configure ; chmod 755 configure); \
+        done; \
+        cd autoconf ; \
+        autoconf configure.libs.in > configure.libs; chmod 755 configure.libs ; \
+        $(MV) configure.libs ../ ; \
+        $(MV) configure ../ ; \
+        cd ..
+
+configclean:
+	/bin/rm -rf ./config.status ./config.log ./include/config.h ./config.cache ./configure.h ; \
+        for I in ${confsdirs}; do \
+          /bin/rm -rf $$I/config.status $$I/config.log $$I/config.h $$I/config.cache $$I/configure.h ; \
+        done; \
+
+ChangeLog:
+	tools/cvs2cl.as.pl --hide-filenames --no-times
+	@(cd libAfterBase ; ../tools/cvs2cl.as.pl --hide-filenames --no-times); \
+        (cd libAfterImage ; ../tools/cvs2cl.as.pl --hide-filenames --no-times)
+

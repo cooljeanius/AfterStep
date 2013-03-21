@@ -128,6 +128,8 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_EXEEXT
+PKG_PROG_PKG_CONFIG
 
 export CC
 export GCC
@@ -145,7 +147,14 @@ if test "x$GCC" = "xyes"; then
 fi
 
 dnl# Add -fPIC for IA64 compilation
-AC_CYGWIN
+AC_DIAGNOSE([obsolete],[AC_CYGWIN is obsolete: use AC_CANONICAL_HOST and check if $host_os
+matches *cygwin*])dnl
+dnl# AC_CANONICAL_HOST is used above
+case $host_os in
+  *cygwin* ) CYGWIN=yes;;
+	 * ) CYGWIN=no;;
+esac
+
 if test "x$CYGWIN" != "xyes" -a "x$GCC" = "xyes" ; then
   if test -z "`echo $CFLAGS | grep '\-fPIC' 2> /dev/null`" ; then
     CFLAGS="$CFLAGS -fPIC"
@@ -205,9 +214,6 @@ export INSTALL_LIB
 AC_PROG_RANLIB
 export RANLIB
 
-AC_PATH_PROG([RM], [rm], [rm])
-export RM
-export RM_F="${RM} -rf"
 AC_PATH_PROG([MV], [mv], [mv])
 export MV
 AC_PATH_PROG([CP], [cp], [cp])
@@ -296,8 +302,6 @@ if test "x$enable_glx" = "xyes"; then
   	AC_CHECK_LIB([GL], [glDrawPixels], [add_lib_GL=yes AC_DEFINE([HAVE_GLX],[1],[Support for OpenGL extention])],[],[$full_x_libs])
 fi
 
-
-
 PATH_XTRA_CHECKED=yes
 export PATH_XTRA_CHECKED
 export x_includes
@@ -343,14 +347,14 @@ _def_lib_conf_opts=" \
 	--enable-sharedlibs=${enable_sharedlibs} \
 "
 
-AC_CHECKING([libAfterBase])
+AS_MESSAGE([checking libAfterBase...])
 cd libAfterBase; \
 ./configure $_def_lib_conf_opts \
    --enable-trace-x=$enable_trace_x; \
 cd ../
 afterbase_lib=
 
-AC_CHECKING([libAfterImage])
+AS_MESSAGE([checking libAfterImage...])
 cd libAfterImage; \
 ./configure $_def_lib_conf_opts \
    --enable-i18n=$enable_i18n --enable-xlocale=$enable_xlocale --with-locale=$with_locale \
@@ -401,12 +405,12 @@ AC_FUNC_REALLOC
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS([bzero getcwd gethostname gettimeofday isascii localeconv memmove memset mkdir putenv regcomp rmdir select setlocale sqrt strcasecmp strchr strdup strerror strncasecmp strrchr strstr strtol])
 
-AC_ARG_ENABLE(alsa, [  --enable-alsa           include alsa >= 0.9 output plugin ],
+AC_ARG_ENABLE([alsa], [  --enable-alsa           include alsa >= 0.9 output plugin ],
 [ BUILD_ALSA="$enableval" ],[ BUILD_ALSA="yes" ])
 
 if test "$BUILD_ALSA" = "yes"; then
-   AC_CHECK_LIB(asound, snd_pcm_open, have_alsa=yes, have_alsa=no)
-   AC_CHECK_HEADER(alsa/asoundlib.h, , have_alsa=no)
+   AC_CHECK_LIB([asound], [snd_pcm_open], [have_alsa=yes], [have_alsa=no])
+   AC_CHECK_HEADER([alsa/asoundlib.h],[ ], [have_alsa=no])
 fi
   
 if test "x$have_alsa" = xyes; then
@@ -435,21 +439,21 @@ dnl# Check for Xinerama extension
 HAVEXINE="NOXINE"
 xine_libs=""
 if test "x$enable_xinerama" = "xyes"; then
-  AC_CHECK_LIB(Xinerama, XineramaQueryScreens, [x_libs="-lXinerama $x_libs";xine_libs="-lXinerama";AC_DEFINE(HAVE_XINERAMA,1,Support for Xinerama multiscreen)],,$full_x_libs)
+  AC_CHECK_LIB([Xinerama], [XineramaQueryScreens], [x_libs="-lXinerama $x_libs";xine_libs="-lXinerama";AC_DEFINE([HAVE_XINERAMA],[1],[Support for Xinerama multiscreen])],[],[$full_x_libs])
 fi
 
 if test "x$enable_sigsegv" = "xyes"; then
-  AC_DEFINE(HAVE_SIGSEGV_HANDLING,1,self diagnostic SIGSEGV handling (as opposed to dumping core))
+  AC_DEFINE([HAVE_SIGSEGV_HANDLING],[1],[self diagnostic SIGSEGV handling (as opposed to dumping core)])
 fi
 
 if test "$with_readline" != no; then
-	AC_CHECK_LIB(ncurses, initscr, 
-			[AC_CHECK_LIB(	readline, readline, 
-					[readline_libs="-lreadline -lncurses";AC_DEFINE(HAVE_READLINE,1,Support for readline library for console input)])])
+	AC_CHECK_LIB([ncurses], [initscr], 
+			[AC_CHECK_LIB([	readline], [readline], 
+					[readline_libs="-lreadline -lncurses";AC_DEFINE([HAVE_READLINE],[1],[Support for readline library for console input])])])
 fi
 
 if test -z "$PKG_CONFIG"; then
-   		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
+   		AC_PATH_PROG([PKG_CONFIG], [pkg-config],[no])
 fi
 
 
@@ -458,17 +462,17 @@ if test "$with_dbus1" = no; then
 	have_dbus1=disabled
 else
 	if test "$PKG_CONFIG" = "no" ; then
-		AC_MSG_CHECKING(if libdbus-1 is available)
-		AC_MSG_RESULT(pkg-config is not found. Cannot check for libdbus-1)
+		AC_MSG_CHECKING([if libdbus-1 is available])
+		AC_MSG_RESULT([pkg-config is not found. Cannot check for libdbus-1])
 		have_dbus1=no
 	else
 		have_dbus1=yes
 		pkg_modules="dbus-1 >= 0.22"
 		
-		PKG_CHECK_MODULES(DBUS1,[$pkg_modules],,[have_dbus1=no])
+		PKG_CHECK_MODULES([DBUS1],[$pkg_modules],[],[have_dbus1=no])
 		
 		if test "x$have_dbus1" = "xyes"; then
-			AC_DEFINE(HAVE_DBUS1,1,libdbus-1 v 0.22 or higher is available )
+			AC_DEFINE([HAVE_DBUS1],[1],[libdbus-1 v 0.22 or higher is available ])
 		fi
 	fi
 fi
@@ -542,19 +546,19 @@ if test "$with_gtk" = no; then
 else
 
 	if test "$PKG_CONFIG" = "no" ; then
-		AC_MSG_CHECKING(if gtk++ 2.0 is available)
-		AC_MSG_RESULT(pkg-config is not found. Cannot check for gtk++ 2.0.)
+		AC_MSG_CHECKING([if gtk++ 2.0 is available])
+		AC_MSG_RESULT([pkg-config is not found. Cannot check for gtk++ 2.0.])
 		have_gtk=no
 	else
 		have_gtk=yes
 		pkg_modules="gtk+-2.0 >= 2.0.0"
-		PKG_CHECK_MODULES(GTK, [$pkg_modules],,[have_gtk=no])
+		PKG_CHECK_MODULES([GTK], [$pkg_modules],[],[have_gtk=no])
 
 		if test "x$have_gtk" = "xyes"; then
 			CLEAN_GTK_LIBS=
 			CLEAN_GTK_CFLAGS=
 	
-			AC_DEFINE(HAVE_GTK,1,GTK++ v.2.0 or higher is available )
+			AC_DEFINE([HAVE_GTK],[1],[GTK++ v.2.0 or higher is available ])
 
 			present_libs="$LDFLAGS $LIBS $x_libs $AFTERIMAGE_LIBS";
 			for l in `echo "$GTK_LIBS"`; do
@@ -593,7 +597,7 @@ GTK_INCLUDES=$GTK_CFLAGS
 
 
 if test "x$enable_ascp" = "xyes"; then
-    AC_MSG_CHECKING(libraries required by FLTK version of ascp)
+    AC_MSG_CHECKING([libraries required by FLTK version of ascp])
 	enable_ascp=no ;
 
     if fltk-config --libs >/dev/null  ;then
@@ -609,8 +613,8 @@ if test "x$enable_ascp" = "xyes"; then
 		  	ASCP_FLTK_LIBS="$ASCP_FLTK_LIBS $l" ;
 	  	  fi;
 		done;
-		AC_MSG_RESULT($ASCP_FLTK_LIBS)
-	    AC_MSG_CHECKING(headers required by ascp-fltk)
+		AC_MSG_RESULT([$ASCP_FLTK_LIBS])
+	    AC_MSG_CHECKING([headers required by ascp-fltk])
 	
   		if fltk-config --cflags >/dev/null  ;then
 			present_incs="$CCFLAGS $x_includes";
@@ -628,13 +632,13 @@ if test "x$enable_ascp" = "xyes"; then
 					ASCP_FLTK_INCLUDES="$ASCP_FLTK_INCLUDES $l" ;
 	  			fi;
 			done;
-			AC_MSG_RESULT($ASCP_FLTK_INCLUDES)
+			AC_MSG_RESULT([$ASCP_FLTK_INCLUDES])
 			enable_ascp=yes ;
 	  		ASCP_FLTK=ascp-fltk ;
   		fi;
 	fi;
 	if test -z "$PKG_CONFIG"; then
-    		AC_PATH_PROG(PKG_CONFIG, pkg-config,no)
+    		AC_PATH_PROG([PKG_CONFIG], [pkg-config],[no])
 	fi
 	if test "x$have_gtk" = "xyes" ; then
 		ASCP_GTK=ascp_gtk
@@ -642,28 +646,28 @@ if test "x$enable_ascp" = "xyes"; then
 	fi
 
 	if test "x$enable_ascp" = "xno"; then
-		AC_MSG_RESULT(neither fltk nor GTK found, ascp disabled)
+		AC_MSG_RESULT([neither fltk nor GTK found, ascp disabled])
 		echo "You have to install FLTK or GTK libaries in order to be able to compile ascp."
     fi;
 fi;
 
 dnl# Electric Fence goes at the end
 if test "x$with_libefence" = "xyes"; then
-  AC_CHECK_LIB(efence,malloc,x_libs="$x_libs -lefence")
+  AC_CHECK_LIB([efence],[malloc],[x_libs="$x_libs -lefence"])
 fi
 
 dnl# Translate enable_* from "yes/no" to "1/0" (for configure.h)
 
-if test "x$enable_different_looknfeels" = "xyes"; then AC_DEFINE(DIFFERENTLOOKNFEELFOREACHDESKTOP,1,Each desktop may have its own look/feel) fi
-if test "x$enable_i18n" = "xyes"; then AC_DEFINE(I18N,1,Internationalized text support) fi
-if test "x$enable_savewindows" = "xno"; then AC_DEFINE(NO_SAVEWINDOWS,1,Save windows and re-open next session) fi
-if test "x$enable_virtual" = "xno"; then AC_DEFINE(NO_VIRTUAL,1,virtual screen support - several pages poer desktop) fi
-if test "x$enable_windowlist" = "xno"; then AC_DEFINE(NO_WINDOWLIST,1,Support for window list) fi
-if test "x$enable_availability" = "xno"; then AC_DEFINE(NO_AVAILABILITYCHECK,1,Check availability of menu items at startup) fi
-if test "x$enable_fixeditems" = "xyes"; then AC_DEFINE(FIXED_DIR, "fixed", enable fixed menu entries) fi
-if test "x$enable_audit" = "xyes"; then AC_DEFINE(DEBUG_ALLOCS,1,Trace memory allocations and check for errors) fi
-if test "x$enable_trace" = "xyes"; then AC_DEFINE(DEBUG_TRACE,1,Trace some functions) fi
-if test "x$enable_trace_x" = "xyes"; then AC_DEFINE(DEBUG_TRACE_X,1,Trace different X calls) fi
+if test "x$enable_different_looknfeels" = "xyes"; then AC_DEFINE([DIFFERENTLOOKNFEELFOREACHDESKTOP],[1],[Each desktop may have its own look/feel]) fi
+if test "x$enable_i18n" = "xyes"; then AC_DEFINE([I18N],[1],[Internationalized text support]) fi
+if test "x$enable_savewindows" = "xno"; then AC_DEFINE([NO_SAVEWINDOWS],[1],[Save windows and re-open next session]) fi
+if test "x$enable_virtual" = "xno"; then AC_DEFINE([NO_VIRTUAL],[1],[virtual screen support - several pages poer desktop]) fi
+if test "x$enable_windowlist" = "xno"; then AC_DEFINE([NO_WINDOWLIST],[1],[Support for window list]) fi
+if test "x$enable_availability" = "xno"; then AC_DEFINE([NO_AVAILABILITYCHECK],[1],[Check availability of menu items at startup]) fi
+if test "x$enable_fixeditems" = "xyes"; then AC_DEFINE([FIXED_DIR], ["fixed"], [enable fixed menu entries]) fi
+if test "x$enable_audit" = "xyes"; then AC_DEFINE([DEBUG_ALLOCS],[1],[Trace memory allocations and check for errors]) fi
+if test "x$enable_trace" = "xyes"; then AC_DEFINE([DEBUG_TRACE],[1],[Trace some functions]) fi
+if test "x$enable_trace_x" = "xyes"; then AC_DEFINE([DEBUG_TRACE_X],[1],[Trace different X calls]) fi
 if test "x$enable_script" = "xyes"; then enable_script="1"; else enable_script="0"; fi
 
 if test "x$data_reinstall" = "xyes"; then no_data_reinstall=""; else no_data_reinstall="yes"; fi
@@ -678,8 +682,8 @@ if test "x$enable_script" = "x1"; then
 fi
 
 if test "x$send_postcard_to_developer" = "xyes"; then
-	AC_CHECK_FUNCS(popen)
-	AC_DEFINE(DO_SEND_POSTCARD,1,E-mail installation notification to AfterStep developers)
+	AC_CHECK_FUNCS([popen])
+	AC_DEFINE([DO_SEND_POSTCARD],[1],[E-mail installation notification to AfterStep developers])
 fi
 
 AC_CANONICAL_TARGET
@@ -768,12 +772,24 @@ AC_SUBST(PERL)
 
 dnl# Write results
 
-dnl# AC_CONFIG_HEADER(include/config.h)
+dnl# AC_CONFIG_HEADERS([include/config.h])
 
 dnl# Common parts of the Makefile
-MAKEFILEDEFINES=./autoconf/Makefile.defines
-MAKEFILECOMMON=./autoconf/Makefile.common
-MAKEFILECOMMONLIB=./autoconf/Makefile.common.lib
+if test -e ./Makefile.defines ; then
+	MAKEFILEDEFINES=./Makefile.defines
+else
+	MAKEFILEDEFINES=./autoconf/Makefile.defines
+fi
+if test -e ./Makefile.common ; then
+	MAKEFILECOMMON=./Makefile.common
+else
+	MAKEFILECOMMON=./autoconf/Makefile.common
+fi
+if test -e ./Makefile.common.lib ; then
+	MAKEFILECOMMONLIB=./Makefile.common.lib
+else
+	MAKEFILECOMMONLIB=./autoconf/Makefile.common.lib
+fi
 LIBAFTERBASEFILES=./libAfterBase/.shared
 LIBAFTERIMAGEFILES=./libAfterImage/.shared
 LIBAFTERSTEPFILES=./libAfterStep/.shared
@@ -840,7 +856,8 @@ if test "x$have_gtk" = "xyes"; then AC_CONFIG_FILES([libASGTK/asgtk-config libAS
 
 AC_CONFIG_FILES([\
 configure.h \
-Makefile AfterStep.spec AfterStep.desktop \
+Makefile Makefile.common Makefile.common.lib Makefile.defines \
+AfterStep.spec AfterStep.desktop \
 afterstep/Makefile doc/Makefile doc/afterstepdoc \
 libAfterStep/afterstep-config \
 libAfterStep/Makefile \

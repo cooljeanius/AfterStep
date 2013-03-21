@@ -1,0 +1,9 @@
+SmallMiniPixmap Folder-Pallette
+
+Comment "Colors for AfterStep\ndesktop tools & windows."
+
+keepname
+include "${prefix}/share/afterstep/colorschemes" ChangeColorscheme
+include "$HOME/.afterstep/colorschemes" ChangeColorscheme
+extension colorscheme.
+miniextension .mini

@@ -1,0 +1,8 @@
+SmallMiniPixmap Folder-Touch
+
+Comment "Pre-defined AfterStep\nwindow & mouse behaviors."
+
+keepname
+include "${prefix}/share/afterstep/feels" ChangeFeel
+include "$HOME/.afterstep/feels" ChangeFeel
+extension feel.
