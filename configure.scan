@@ -13,7 +13,6 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lm':
@@ -47,7 +46,6 @@ AC_CONFIG_FILES([Makefile
                  libASGTK/Makefile
                  libAfterConf/Makefile
                  libAfterStep/Makefile
-                 perl-AfterImage/Makefile
                  src/ASConfig/Makefile
                  src/ASDocGen/Makefile
                  src/Animate/Makefile
